@@ -1,0 +1,503 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+
+.imageblock .content img, .image img {max-width: 900px;max-height: 300px;}
+.deck h3, .deck h4 {display: block !important;margin-bottom:8px;margin-top:5px;}
+.listingblock {margin:8px;}
+.pull-bottom {position:relative;bottom:1em;}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.admonitionblock.note.speaker { display:none; }
+</style>
+<style type="text/css" media="screen">
+/* #editor.maximize-editor .CodeMirror-code { font-size:24px; line-height:26px; } */
+</style>
+<article class="guide" ng-controller="AdLibDataController">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Part 2 - The Enterprise Knowledge Graph</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    <style type="text/css">
+.smallest {
+   font-size:0.6em;
+}
+</style>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Part 2 - The Enterprise Knowledge Graph</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this tutorial we will get familiar with the Enterprise Knowledge Graph (EKG). A knowledge graph is a <strong>design pattern</strong> for storing, organizing, and accessing interrelated data entities, including their semantic relationships. With knowledge graphs, you can better understand your data and build more intelligent applications.</p>
+</div>
+<div class="paragraph">
+<p>After finishing this tutorial you will:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>1. Have a basic understanding of the data model (<em>Ontology</em>) of the EKG.</p>
+</li>
+<li>
+<p>2. Build more advanced queries to find interesting network patterns.</p>
+</li>
+<li>
+<p>3. Gain insight in how the knowledge graph can be helpful to you.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>To get started, make sure to use the database <code>rabokgxxx</code> where <code>xxx</code> is the number in your username</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->:use rabokgxxx<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>The data model (Ontology)</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>The Rabobank customers are central to the Enterprise Knowledge Graph. Customers can be either <em>Natural</em> <em>Persons</em> and <em>Organisations</em>, have relationships with other customers, have products and accounts. Transactions take place between accounts (both Rabobank and non-Rabobank).</p>
+</div>
+<div class="paragraph">
+<p>The graph provides a multi-dimensional <strong>360 degree customer view</strong>. Here a few examples of key relations:</p>
+</div>
+<div style="border-radius: 2px">
+<ol>
+<li>- <code>`(:Customer:Person)-[:HAS_ACCOUNT]->(:Account)` - Accounts of a customer (note that the customer is also a Natural Person, nodes can have multiple labels)</code></li>
+<li>- <code>`(:Customer)-[:RELATED_TO]->(:Customer)` - Relationships between customers (ie. family, ownership, ubo, etc.)</code></li>
+<li>- <code>`(:Account)-[:TRANSACTION_WITH_TOTAL]->(:Account)` - Transactions between accounts (aggregated)</code></li>
+</ol>
+</div>
+<div style="padding: 12px; border-radius: 2px">
+
+We enrich the knowledge graph over time with new node labels and relationships, for more details see the <a href="https://dev.azure.com/raboweb/Tribe%20Data%20and%20Analytics/_wiki/wikis/linQ%20Knowledge/138679/Ontology" target="_blank">Ontology documentation</a> on Azure DevOps.
+<br>
+<br>
+<b>Note:</b> To keep queries intuitive, we simplified the <i>RELATED_TO</i> relation in this synthetic version of the graph.
+We have selected a few types of relations and made them explicit:
+
+<ol>
+<li>- <code>(:Person)-[:HAS_PARENT]->(:Person)</code></li>
+<li>- <code>(:Person)-[:MARRIED_TO]-(:Person)</code></li>
+<li>- <code>(:Person:Organisation)-[:IS_OWNER_OF]->(:Organisation)</code></li>
+<li>- <code>(:Organisation)-[:HAS_AS_UBO]->(:Person)</code></li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Prevent getting too many results using <code>LIMIT</code></h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>The EKG contains data for millions of customers. It can grow up to hundreds of millions of nodes and billions of relations.
+It is important not to get too many results. If you query to return all customers of the Rabobank, the database will actually try and achieve that. This will take a very long time to process and may cause memory problems.</p>
+</div>
+<div class="paragraph">
+<p>You can use the <code>LIMIT</code> clause to return a limited number of nodes and relations.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:Customer)
+RETURN c.relid AS relid, c.name AS customer_name
+ORDER BY customer_name ASC
+LIMIT 5<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>So, what is happening in this query?</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>1. If you do not return the variable <code>c</code> itself, but <strong>properties</strong> of the node, the Neo4j browser shows the result as a table instead of a graph visualisation.</p>
+</li>
+<li>
+<p>2. You can use an alias using the <code>AS</code> clause when returning property names (<code>customer_name</code>)</p>
+</li>
+<li>
+<p>3. <code>ORDER BY</code> sorts by customer name in ascending order (use <code>DESC</code> for descending)</p>
+</li>
+<li>
+<p>4. <code>LIMIT</code> constrains the number of returned rows.</p>
+</li>
+</ol>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://metis.graphdatabase.ninja/rabobank/images/results-table-part2.png" alt="results table part2" height="200">
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Counting nodes with <code>COUNT</code></h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Number of customers in the database:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:Customer) RETURN COUNT(c) AS nr_customers<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Number of accounts in the database:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (a:Account) RETURN COUNT(a) AS nr_accounts<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&nbsp;</p>
+</div>
+<div style="background: #5CA6D9EE; padding: 12px; color: white; border-radius: 2px">
+<b>Tip</b>: Neo4j maintains a <i>count store</i> for holding count metadata for a number of things, so even if there are millions of nodes in the graph you can count labels like (:Customer) quickly.
+For more details see <a href="https://neo4j.com/developer/kb/fast-counts-using-the-count-store/" target="_blank">Fast counts using the count store.</a>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Counting nodes with <code>DISTINCT</code></h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Customers can own more than one account, so if you list customers and their accounts, customer may end up multiple times in the results. See for example the following query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(c:Customer)-[:HAS_ACCOUNT]-&gt;(a:Account)
+RETURN c.name, a.iban LIMIT 3<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&nbsp;</p>
+</div>
+<div class="paragraph">
+<p>The default behavior of <code>COUNT</code> is to count all matching results, including duplicates. To avoid counting duplicates use the <code>DISTINCT</code> keyword.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:Customer)-[:HAS_ACCOUNT]-&gt;(:Account)
+WITH COUNT(c) AS nr_customers_duplicate, COUNT(DISTINCT c) AS nr_customers_distinct
+RETURN nr_customers_duplicate, nr_customers_distinct<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Transactions between accounts</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In the EKG, transaction relations represent aggregated bookings. They are bi-directional to model incoming and outgoing transactions.
+The <strong>relationship property</strong> <code>nr_trx</code> and <code>sum_trx</code> indicate the number of transactions between the accounts and the total sum in EURO value.</p>
+</div>
+<div class="paragraph">
+<p>In this query we look for customers that <strong>received</strong> more than 1000 EUR from another account:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(c:Customer)-[:HAS_ACCOUNT]-&gt;(a:Account)&lt;-[r:TRANSACTION_WITH_TOTAL]-(:Account)
+WHERE r.sum_trx &gt; 1000
+RETURN p LIMIT 30<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By changing the direction in <code>-[TRANSACTION_WITH_TOTAL]&#8594;</code> you could target customers that <strong>sent</strong> more than 1000 EUR.</p>
+</div>
+<div class="paragraph">
+<p>If you don&#8217;t care about the direction of the transaction, you can <strong>leave out the arrow</strong> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(c:Customer)-[:HAS_ACCOUNT]-&gt;(a:Account)-[r:TRANSACTION_WITH_TOTAL]-(:Account)
+WHERE r.sum_trx &gt; 1000
+RETURN p LIMIT 30<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Transactions between customers and their family members</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this query we look for customers that transacted with their children or partners:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(c1:Customer)-[:HAS_ACCOUNT]-&gt;(a:Account)-[r:TRANSACTION_WITH_TOTAL]-(:Account)&lt;-[:HAS_ACCOUNT]-(c2:Customer)&lt;-[:IS_PARENT_OF|MARRIED_TO]-(c1)
+RETURN p LIMIT 5<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that the variable <code>c1</code> is re-used in the pattern. This causes a circular pattern where the inital customer <code>c1</code> is related to <code>c2</code>.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Supernodes</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>A super node is any node that happens to have a lot of relationships. How many relationships? Well, millions in the case of the Enterprise Knowledge Graph.
+For example, the Tax Authority transacts with millions of accounts in the Netherlands. Also, Payment Service Providers or other large companies tend to have lot of relationships.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s see if we can identify the top three nodes with the most <strong>incoming connections</strong> in our very small synthetic version of the EKG.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (a1:Account)&lt;-[:TRANSACTION_WITH_TOTAL]-(a2:Account)
+WITH a1, count(distinct a2) as in_degree
+RETURN a1.iban, in_degree
+ORDER BY in_degree
+DESC LIMIT 3<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This query groups by account and then counts the incoming relationships.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Create network features for Account nodes</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Lets add two features to the account nodes that indicate the number of incoming and outgoing connections. We can use them later to filter our queries.</p>
+</div>
+<ol>
+<li><code>in_degree</code> number of accounts an account <i>received money from</i></li>
+<li><code>out_degree</code> number of of accounts an account <i>sent money to</i></li>
+</ol>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// in_degree
+MATCH (a1:Account)&lt;-[:TRANSACTION_WITH_TOTAL]-(a2:Account)
+WITH a1, COUNT(DISTINCT a2) as in_degree
+SET a1.in_degree = in_degree;
+
+// out_degree
+MATCH (a1:Account)-[:TRANSACTION_WITH_TOTAL]-&gt;(a2:Account)
+WITH a1, COUNT(DISTINCT a2) as out_degree
+SET a1.out_degree = out_degree;<!--/code--></pre>
+</div>
+</div>
+<div style="background: #5CA6D9EE; padding: 12px; color: white; border-radius: 2px">
+<b>Tip:</b> Writing features to millions of nodes is often not feasible. The popular plugin APOC has functions available that can write features in batches very efficiently.
+See: <a href="https://neo4j.com/labs/apoc/4.4/overview/apoc.periodic/apoc.periodic.iterate/" target="_blank">apoc.periodic.iterate</a>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Use network features in queries</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Let&#8217;s filter to show transactions of accounts that have a large <code>in_degree</code> (supernodes):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(a:Account)-[:TRANSACTION_WITH_TOTAL]-(:Account) WHERE a.in_degree &gt; 30 RETURN p LIMIT 25<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now filter to show transactions of accountsthey have a lower <code>in_degree</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(a:Account)-[:TRANSACTION_WITH_TOTAL]-(:Account) WHERE a.in_degree &lt; 30 RETURN p LIMIT 25<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Customer accounts at other banks available via <code>HAS_MATCHED_ACCOUNT</code> relations</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Customers may hold accounts at other banks, but this information is not readily available within the Rabobank. We apply <strong>Entity Matching</strong> to enrich the knowledge graph with <code>HAS_MATCHED_ACCOUNT</code> relations.
+Based on names from Non-Rabobank accounts as they appear in bookings data, we match customers to their non-Rabobank accounts.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p1=(:Customer)-[:HAS_MATCHED_ACCOUNT]-&gt;(:Account)-[:HAS_NAME_BOOKING]-(:Name)
+RETURN p1 LIMIT 10<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Scenario - AML transaction pattern 1/2</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>The following query shows how you could target a transaction pattern where a customer deposits <strong>large amounts of cash</strong> and additionally sends funds to a <strong>foreign account</strong>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p1=(c:Customer)-[:HAS_ACCOUNT]-&gt;(a1:Account)-[:TRANSACTION_WITH_TOTAL]-&gt;(a2:Account)
+WHERE a1.cash_sum_credit &gt; 1000
+AND a2.is_nl = False
+RETURN p1<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We enriched the Account nodes with two new features to make this pattern possible.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>1. The attribute <code>cash_sum_credit</code> indicates the amount of cash that was deposited to this account.</p>
+</li>
+<li>
+<p>2. The flag <code>is_nl</code> can be used to target foreign accounts.</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Scenario - AML transaction pattern 2/2</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Lets extend the pattern further and include the network of family relations of the customer that deposited cash.</p>
+</div>
+<div class="paragraph">
+<p>For this scenario we enriched the graph with the <code>:AMLRisk</code> flag to indicate Accounts that are flagged for Money Laundering. (<em>Not an offical label in the EKG Ontology, used here to demonstrate scenario</em>)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p1=(c:Customer)-[:HAS_ACCOUNT]-&gt;(a1:Account)-[:TRANSACTION_WITH_TOTAL]-&gt;(a2:Account)
+WHERE a1.cash_sum_credit &gt; 1000
+AND a2.is_nl = False
+OPTIONAL MATCH p2=(c)-[:MARRIED_TO]-(:Customer)-[:HAS_MATCHED_ACCOUNT]-&gt;(:Account:AMLRisk)-[:HAS_NAME_BOOKING]-(:Name)
+RETURN p1, p2<!--/code--></pre>
+</div>
+</div>
+<div style="background: #5CA6D9EE; padding: 12px; color: white; border-radius: 2px">
+OPTIONAL MATCH matches patterns against a graph database, just as MATCH does. The difference is that if no matches are found, OPTIONAL MATCH will use a null for missing parts of the pattern. OPTIONAL MATCH could therefore be considered the Cypher equivalent of the outer join in SQL.
+</div>
+<div class="paragraph">
+<p><em>Not meant to be a realistic example, but to show how you can find interesting patterns if you enrich the graph with additional features.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>That&#8217;s it for part 2!</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Now you are ready to apply your new skills and explore the Knowledge Graph.</p>
+</div>
+<div padding: 12px; border-radius: 2px">
+If you are interested in diving deeping into Neo4j and Cypher, there are great courses available on the
+<a href="https://graphacademy.neo4j.com/categories" target="_blank">Neo4j Graph Academy</a>.
+</div>
+	</div>
+  </div>
+</slide>
+  </carousel>
+</article>

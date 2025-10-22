@@ -1,0 +1,421 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+
+.imageblock .content img, .image img {max-width: 900px;max-height: 300px;}
+.deck h3, .deck h4 {display: block !important;margin-bottom:8px;margin-top:5px;}
+.listingblock {margin:8px;}
+.pull-bottom {position:relative;bottom:1em;}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.admonitionblock.note.speaker { display:none; }
+</style>
+<style type="text/css" media="screen">
+/* #editor.maximize-editor .CodeMirror-code { font-size:24px; line-height:26px; } */
+</style>
+<article class="guide" ng-controller="AdLibDataController">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Part 1 - Cypher Basics</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    <style type="text/css">
+.smallest {
+   font-size:0.6em;
+}
+</style>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Part 1 - Cypher Basics</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this tutorial you will learn the basic concepts of Cypher, Neo4j&#8217;s query language. Cypher is a graph query language that is used to query the Neo4j Database.
+Just like you use SQL to query a relational database, you would use Cypher to query the Neo4j Database.</p>
+</div>
+<div class="paragraph">
+<p>In this tutorial learned to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>1. Insert data into the graph.</p>
+</li>
+<li>
+<p>2. Update and delete data.</p>
+</li>
+<li>
+<p>3. Run basic queries on this database.</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Creating nodes with the <code>CREATE</code> clause</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Nodes and Relationships are the basic building blocks of a graph database. A node in graph database is similar to a row in a relational database. Two nodes can be connected with a relationship. The database is still empty, so let&#8217;s start by creating a few nodes using the <code>CREATE</code> clause.</p>
+</div>
+<div class="paragraph">
+<p>In writing a Cypher query, a node is enclosed between a parenthesis — like <code>(:Person)</code> where <code>Person</code> is the type of node it is referring to.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CREATE (:Person {name: "John Doe" })
+CREATE (:City {name: "Utrecht"})<!--/code--></pre>
+</div>
+</div>
+<div style="background: #5CA6D9EE; padding: 12px; color: white; border-radius: 2px">
+Hint: You can click on the query above to populate it in the editor.
+</div>
+<div class="paragraph">
+<p>&nbsp;</p>
+</div>
+<div class="paragraph">
+<p>When creating nodes you can set properties directly by adding them between curly brackets <code>{property_name: "property_value"}</code>.
+Note that the property names are not specified with quotes (<code>"</code>), the values do contain quotes if the value is a string.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Querying the graph with <code>MATCH</code></h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We can now query the database to retrieve nodes. We added a variable <code>p</code> before <code>:Person</code> and use it to return the node.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (p:Person) RETURN p<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Running <code>CREATE</code> twice results in duplicate data</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Important to note is that the <code>CREATE</code> clause does not check if the data is already in the database. If you&#8217;d run the create clause again you will end up with duplicate data.</p>
+</div>
+<div class="paragraph">
+<p>Normally you would like to prevent that, but for the sake of learning let&#8217;s allow some duplicates.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CREATE (:Person {name: "John Doe" })
+CREATE (:City {name: "Utrecht"})<!--/code--></pre>
+</div>
+</div>
+<div style="background: #5CA6D9EE; padding: 12px; color: white; border-radius: 2px">
+Hint: You can also use `:history` to see your previous queries
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Empty the database with <code>DELETE</code></h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Let&#8217;s start over with an empty graph and run the following query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (n:Person|City) DELETE n<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This query deletes nodes of type Person or City.</p>
+</div>
+<div class="paragraph">
+<p>You can only delete nodes that have no relationships, to delete nodes and any relationships connected them, use the <code>DETACH DELETE</code> clause.</p>
+</div>
+<div style="background: #5CA6D9EE; padding: 12px; color: white; border-radius: 2px">
+Tip: Double check that the query covers what you intend, also check if you are on the correct database!
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Creating nodes with the <code>MERGE</code> clause</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You can use the <code>MERGE</code> clause instead of <code>CREATE</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MERGE (:Person {name: "John Doe" })
+MERGE (:City {name: "Utrecht"})<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>MERGE</code> is slower than <code>CREATE</code> if you have a lot of data, but the advantage is that it checks if what you try to add is already present in the database, preventing duplicates.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Adding Relationships using <code>MATCH</code> and <code>MERGE</code></h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Two nodes can be connected with a relationship. In writing a Cypher query, relationships are enclosed in square brackets - like <code>[:LIVES_IN]</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (p:Person)
+WHERE p.name = "John Doe"
+MATCH (c:City)
+WHERE c.name = "Utrecht"
+MERGE (p)-[:LIVES_IN]-&gt;(c)<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here we first use <code>MATCH</code> to find the nodes involved in the relationship and then create the relationship with the <code>MERGE</code> clause.</p>
+</div>
+<div class="paragraph">
+<p>Cypher provides a visual way of matching patterns and relationships. It relies on the following ascii-art type of syntax: <code>(nodes)-[:CONNECT_TO]&#8594;(otherNodes)</code>. Rounded brackets are used for nodes <code>()</code>, and <code>-[ ]&#8594;</code> and <code>&#8592;[ ]-</code> for relationships. Relationships have a direction in Neo4j indicated by the arrow.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Querying patterns using <code>MATCH</code></h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Now we have created both nodes and relations in the graph, we can retrieve patterns from the graph.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(:Person)-[:LIVES_IN]-&gt;()
+RETURN p<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here we match a certain pattern, assign it to a variable and return it.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Updating properties with <code>SET</code></h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>If you like to add or update an property to an existing node you can use <code>MATCH</code> to select the nodes you want to update and then use <code>SET</code> to update or add an property.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:City) WHERE c.name = "Arnhem"
+SET c.province = "Gelderland"
+RETURN c<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Recap</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Ok, so far we have learned the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>1. Add nodes into the graph with <code>CREATE</code> or <code>MERGE</code></p>
+</li>
+<li>
+<p>2. Add relations into the graph with <code>MATCH</code> and <code>MERGE</code></p>
+</li>
+<li>
+<p>3. Retrieve nodes and relations with <code>MATCH</code></p>
+</li>
+<li>
+<p>4. Delete everying from the graph records with <code>DETACH DELETE</code></p>
+</li>
+<li>
+<p>5. Update nodes with new properties using <code>SET</code></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Now, let&#8217;s use these new skills to create a graph together.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Create a personal graph</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You can change the following template to create your personal graph. Feel free to add other type of labels, you might need new variable names when you do. If you are stuck feel free to ask one of our colleagues to help you out.</p>
+</div>
+<div class="paragraph">
+<p>When the query runs successfully, you can share it in the chat if you like. This way we can combine all personal queries and create a "participant graph".</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// create nodes
+MERGE (person:Person {name: "John Doe"})
+MERGE (squad:Squad {name: "Squad xxx"})
+MERGE (area:Area {name: "Area xxx"})
+MERGE (tribe:Tribe {name: "Tribe xxx"})
+MERGE (role:Role {name: "Data Scientist"})
+MERGE (language:Language {name: "Python"})
+MERGE (hobby1:Hobby {name: "Bouldering"})
+MERGE (hobby2:Hobby {name: "Piano"})
+MERGE (city:City {name: "Arnhem"})
+
+// use the variables from the created nodes to create relations
+MERGE (person)-[:WORKS_IN]-&gt;(squad)
+MERGE (squad)-[:IN_AREA]-&gt;(area)
+MERGE (area)-[:IN_TRIBE]-&gt;(tribe)
+MERGE (person)-[:LIKES_LANGUAGE]-&gt;(language)
+MERGE (person)-[:HAS_HOBBY]-&gt;(hobby1)
+MERGE (person)-[:HAS_HOBBY]-&gt;(hobby2)
+MERGE (person)-[:HAS_ROLE]-&gt;(role)
+MERGE (person)-[:LIVES_IN]-&gt;(city);<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can view the results using the following query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(person:Person)-[*..4]-()
+WHERE person.name = "John Doe" RETURN p<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It works best if we are a bit consistent in the naming. We can try to align the Tribe, Area names a bit using the chat as well.</p>
+</div>
+<div class="paragraph">
+<p>Lets see how far we get with this experiment <code>:)</code></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Visualize the schema of the graph</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Now that we have created a graph, you can see the schema of the graph. It might help to understand what labels and relationships are available and how they relate to each other.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.schema.visualization<!--/code--></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://metis.graphdatabase.ninja/rabobank/images/schema-part1.png" alt="schema part1" height="300">
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>That&#8217;s it!</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Hope you enjoyed it. To continue with part 2, go to the next guide where we will query the Enterprise Knowledge Graph.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->:play https://metis.graphdatabase.ninja/rabobank/part2.html<!--/code--></pre>
+</div>
+</div>
+<div style="background: #5CA6D9EE; padding: 12px; color: white; border-radius: 2px">
+Tip: "unpin" this panel so it no longer stays on top.
+</div>
+	</div>
+  </div>
+</slide>
+  </carousel>
+</article>
